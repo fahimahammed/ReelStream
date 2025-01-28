@@ -1,8 +1,72 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Request, Response, NextFunction } from 'express';
+import { Prisma } from '@prisma/client';
+import { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
+import { ZodError } from 'zod';
+import ApiError from '../errors/ApiError';
+import handlePrismaClientKnownRequestError from '../errors/handlePrismaClientKnownRequestError';
+import handlePrismaValidationError from '../errors/handlePrismaValidationError';
+import handleZodError from '../errors/handleZodError';
 
-export function globalErrorHandler(err: any, req: Request, res: Response, next: NextFunction) {
-    console.error(err);
-    res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' });
-}
+const globalExceptionHandler: ErrorRequestHandler = (
+    error,
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    console.log('🚀 exceptionHandler ~ error:', error);
+
+    let errorMessages: {
+        path: string | number;
+        message: string;
+    }[] = [];
+
+    let statusCode = 500;
+    let message = 'Something went wrong';
+
+    if (error instanceof Prisma.PrismaClientValidationError) {
+        const simplifiedError = handlePrismaValidationError(error);
+        statusCode = simplifiedError.statusCode;
+        message = simplifiedError.message;
+        errorMessages = simplifiedError.errorMessages;
+    } else if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        const simplifiedError = handlePrismaClientKnownRequestError(error);
+        statusCode = simplifiedError.statusCode;
+        message = simplifiedError.message;
+        errorMessages = simplifiedError.errorMessages;
+    } else if (error instanceof ZodError) {
+        const simplifiedError = handleZodError(error);
+        statusCode = simplifiedError.statusCode;
+        message = simplifiedError.message;
+        errorMessages = simplifiedError.errorMessages;
+    } else if (error instanceof ApiError) {
+        statusCode = error?.statusCode;
+        message = error?.message;
+        errorMessages = error?.message
+            ? [
+                {
+                    path: '',
+                    message: error?.message
+                }
+            ]
+            : [];
+    } else if (error instanceof Error) {
+        message = error?.message;
+        errorMessages = error?.message
+            ? [
+                {
+                    path: '',
+                    message: error?.message
+                }
+            ]
+            : [];
+    }
+
+    res.status(statusCode).json({
+        success: false,
+        message,
+        errorMessages
+    });
+};
+
+export default globalExceptionHandler;
