@@ -1,6 +1,7 @@
 import cors from 'cors';
 import express, { Application, Request, Response } from 'express';
 import cookieParser from 'cookie-parser';
+import { videoRoutes } from './modules/video/video.routes';
 
 const app: Application = express();
 
@@ -13,7 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 // Import and use your routes here
 // import routes from './routes';
-// app.use('/api/v1', routes);
+app.use('/api/v1/video/upload', videoRoutes);
 
 app.get('/', async (req: Request, res: Response) => {
     res.status(200).json({
