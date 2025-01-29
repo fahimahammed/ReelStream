@@ -3,7 +3,7 @@ import sendResponse from '../../utils/sendResponse';
 import { AuthServices } from './auth.service';
 import catchAsync from '../../utils/catchAsync';
 import env from '../../config/env';
-import { ILoginUserResponse } from './auth.interface';
+import { ILoginUserResponse, IRefreshTokenResponse } from './auth.interface';
 
 const registerUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -40,28 +40,21 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
-// const refreshToken = catchAsync(async (req: Request, res: Response) => {
-//     const { refreshToken } = req.cookies;
+const refreshToken = catchAsync(async (req: Request, res: Response) => {
+    const { refreshToken } = req.cookies;
 
-//     const result = await AuthService.refreshToken(refreshToken);
+    const result = await AuthServices.refreshToken(refreshToken);
 
-//     // set refresh token into cookie
-//     const cookieOptions = {
-//         secure: config.env === 'production',
-//         httpOnly: true,
-//     };
-
-//     res.cookie('refreshToken', refreshToken, cookieOptions);
-
-//     sendResponse<IRefreshTokenResponse>(res, {
-//         statusCode: 200,
-//         success: true,
-//         message: 'User logged in successfully !',
-//         data: result,
-//     });
-// });
+    sendResponse<IRefreshTokenResponse>(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Access token generated!',
+        data: result,
+    });
+});
 
 export const AuthController = {
     registerUser,
-    loginUser
+    loginUser,
+    refreshToken
 };
