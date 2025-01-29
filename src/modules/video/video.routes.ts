@@ -6,6 +6,8 @@ import { auth } from '../../middlewares/auth';
 
 const router = express.Router();
 
+router.get("/", VideoController.getAllVideos);
+
 router.post(
     '/',
     auth,

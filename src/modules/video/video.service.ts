@@ -4,6 +4,7 @@ import prisma from "../../utils/prismaClient";
 import { File, IVideoPayload } from "./video.interface";
 import { generateVideoThumbnail } from "./video.utils";
 import { JwtPayload } from "jsonwebtoken";
+import redis from "../../utils/redisClient";
 
 
 const uploadVideo = async (file: File, data: IVideoPayload, authUser: JwtPayload): Promise<Video> => {
@@ -44,7 +45,31 @@ const uploadVideo = async (file: File, data: IVideoPayload, authUser: JwtPayload
     }
 };
 
+const getAllVideos = async (query: Record<string, unknown>) => {
+    const page = parseInt(query.page as string) || 1;
+    const limit = parseInt(query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    const cacheKey = `videos:page-${page}:limit-${limit}`;
+    const cachedVideos = await redis.get(cacheKey);
+
+    if (cachedVideos) {
+        return JSON.parse(cachedVideos);
+    }
+
+    const videos = await prisma.video.findMany({
+        skip,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+    });
+
+    await redis.setex(cacheKey, 60, JSON.stringify(videos));
+
+    return videos;
+}
+
 export const VideoService = {
     uploadVideo,
+    getAllVideos
 };
 

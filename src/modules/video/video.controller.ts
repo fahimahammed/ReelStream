@@ -16,9 +16,20 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
         message: 'Video uploaded successfully',
         data: result
     })
-}
-)
+});
+
+const getAllVideos = catchAsync(async (req: Request, res: Response) => {
+
+    const result = await VideoService.getAllVideos(req.query);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Video retrived successfully',
+        data: result
+    })
+});
 
 export const VideoController = {
-    uploadVideo
+    uploadVideo,
+    getAllVideos
 };
