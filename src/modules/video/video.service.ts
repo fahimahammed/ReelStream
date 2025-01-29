@@ -5,6 +5,8 @@ import { File, IVideoPayload } from "./video.interface";
 import { generateVideoThumbnail } from "./video.utils";
 import { JwtPayload } from "jsonwebtoken";
 import redis from "../../utils/redisClient";
+import ApiError from "../../errors/ApiError";
+import { StatusCodes } from "http-status-codes";
 
 
 const uploadVideo = async (file: File, data: IVideoPayload, authUser: JwtPayload): Promise<Video> => {
@@ -66,10 +68,42 @@ const getAllVideos = async (query: Record<string, unknown>) => {
     await redis.setex(cacheKey, 60, JSON.stringify(videos));
 
     return videos;
-}
+};
+
+
+const getVideoById = async (id: string, userIp: string) => {
+    const cacheKey = `video:${id}`;
+    const viewKey = `video_view:${id}:${userIp}`;
+
+    const cachedVideo = await redis.get(cacheKey);
+
+    const video = cachedVideo ? JSON.parse(cachedVideo) : await prisma.video.findUnique({ where: { id } });
+
+    if (!video) {
+        throw new ApiError(StatusCodes.NOT_FOUND, "Video not found!");
+    }
+
+    const hasViewed = await redis.get(viewKey);
+    if (!hasViewed) {
+        await prisma.video.update({
+            where: { id },
+            data: { viewCount: { increment: 1 } },
+        });
+        await redis.setex(viewKey, 60, "1");
+    }
+
+    if (!cachedVideo) {
+        await redis.setex(cacheKey, 60, JSON.stringify(video));
+    }
+
+    return video;
+};
+
+
 
 export const VideoService = {
     uploadVideo,
-    getAllVideos
+    getAllVideos,
+    getVideoById
 };
 

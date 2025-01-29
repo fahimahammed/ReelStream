@@ -29,7 +29,22 @@ const getAllVideos = catchAsync(async (req: Request, res: Response) => {
     })
 });
 
+const getVideoById = catchAsync(async (req: Request, res: Response) => {
+
+    const { id } = req.params;
+    const ip = req.ip;
+
+    const result = await VideoService.getVideoById(id, ip as string);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Video retrived successfully',
+        data: result
+    })
+});
+
 export const VideoController = {
     uploadVideo,
-    getAllVideos
+    getAllVideos,
+    getVideoById
 };
