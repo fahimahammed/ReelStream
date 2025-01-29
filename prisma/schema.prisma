@@ -30,8 +30,9 @@ model Video {
   description  String
   url          String
   thumbnailUrl String
-  uploadedBy   String?
-  user         User?        @relation(fields: [uploadedBy], references: [id])
+  viewCount    Int          @default(0)
+  uploadedBy   String
+  user         User         @relation(fields: [uploadedBy], references: [id])
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
   engagements  Engagement[]
