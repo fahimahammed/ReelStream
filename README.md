@@ -34,15 +34,7 @@
 | Method | Endpoint | Description | Auth Required |
 |--------|---------|-------------|--------------|
 | `GET` | `/api/analytics/videos` | Get engagement analytics (views, likes, uploads) | ✅ Yes |
-| `GET` | `/api/analytics/users` | Get user activity analytics | ✅ Yes |
 
----
-
-## **⚡ Performance & Monitoring**
-| Method | Endpoint | Description | Auth Required |
-|--------|---------|-------------|--------------|
-| `GET` | `/api/health` | Check API health | ❌ No |
-| `GET` | `/api/metrics` | Get API performance metrics | ✅ Yes |
 
 ---
 
