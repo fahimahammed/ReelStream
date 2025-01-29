@@ -18,7 +18,7 @@
 | `POST` | `/api/videos/upload` | Upload a video reel | ✅ Yes |
 | `GET` | `/api/videos` | Get all public videos (paginated) | ❌ No |
 | `GET` | `/api/videos/:id` | Get video details (with caching) | ❌ No |
-| `DELETE` | `/api/videos/:id` | Delete user’s own video | ✅ Yes |
+| `DELETE` | `/api/videos/:id` | Delete user’s own video | ✅ Yes | 
 
 ---
 
@@ -26,7 +26,6 @@
 | Method | Endpoint | Description | Auth Required |
 |--------|---------|-------------|--------------|
 | `POST` | `/api/videos/:id/like` | Like/unlike a video | ✅ Yes |
-| `GET` | `/api/videos/:id/views` | Increase view count | ❌ No |
 | `GET` | `/api/videos/:id/likes` | Get like count | ❌ No |
 
 ---
