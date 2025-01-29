@@ -18,6 +18,31 @@ const userRegValidationSchema = z.object({
     })
 });
 
+const userLoginValidationSchema = z.object({
+    body: z.object({
+        email: z
+            .string()
+            .email('Please provide a valid email address'),
+        password: z
+            .string()
+    })
+});
+
+const jwtRegex = /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/;
+
+const tokenValidationSchema = z.object({
+    cookies: z.object({
+        refreshToken: z
+            .string()
+            .regex(jwtRegex, {
+                message: 'Invalid Refresh Token 1',
+            }),
+    }),
+});
+
+
 export const AuthValidation = {
-    userRegValidationSchema
+    userRegValidationSchema,
+    userLoginValidationSchema,
+    tokenValidationSchema
 };

@@ -13,11 +13,13 @@ router.post(
 
 router.post(
     '/login',
+    validateRequest(AuthValidation.userLoginValidationSchema),
     AuthController.loginUser
 )
 
 router.post(
     '/refresh-token',
+    validateRequest(AuthValidation.tokenValidationSchema),
     AuthController.refreshToken
 )
 
