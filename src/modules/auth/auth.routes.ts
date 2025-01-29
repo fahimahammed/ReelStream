@@ -11,5 +11,10 @@ router.post(
     AuthController.registerUser
 );
 
+router.post(
+    '/login',
+    AuthController.loginUser
+)
+
 
 export const authRoutes = router;
