@@ -43,8 +43,22 @@ const getVideoById = catchAsync(async (req: Request, res: Response) => {
     })
 });
 
+const likeVideo = catchAsync(async (req: Request, res: Response) => {
+
+    const { id } = req.params;
+
+    const result = await VideoService.likeVideo(id, req.user);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: result.message,
+        data: result
+    })
+});
+
 export const VideoController = {
     uploadVideo,
     getAllVideos,
-    getVideoById
+    getVideoById,
+    likeVideo
 };

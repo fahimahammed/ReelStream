@@ -63,9 +63,16 @@ const getAllVideos = async (query: Record<string, unknown>) => {
         skip,
         take: limit,
         orderBy: { createdAt: "desc" },
+        include: {
+            user: {
+                select: {
+                    name: true
+                }
+            }
+        }
     });
 
-    await redis.setex(cacheKey, 60, JSON.stringify(videos));
+    await redis.setex(cacheKey, 300, JSON.stringify(videos));
 
     return videos;
 };
@@ -77,7 +84,16 @@ const getVideoById = async (id: string, userIp: string) => {
 
     const cachedVideo = await redis.get(cacheKey);
 
-    const video = cachedVideo ? JSON.parse(cachedVideo) : await prisma.video.findUnique({ where: { id } });
+    const video = cachedVideo ? JSON.parse(cachedVideo) : await prisma.video.findUnique({
+        where: { id },
+        include: {
+            user: {
+                select: {
+                    name: true
+                }
+            }
+        }
+    });
 
     if (!video) {
         throw new ApiError(StatusCodes.NOT_FOUND, "Video not found!");
@@ -93,7 +109,7 @@ const getVideoById = async (id: string, userIp: string) => {
     }
 
     if (!cachedVideo) {
-        await redis.setex(cacheKey, 60, JSON.stringify(video));
+        await redis.setex(cacheKey, 180, JSON.stringify(video));
     }
 
     return video;
@@ -101,59 +117,74 @@ const getVideoById = async (id: string, userIp: string) => {
 
 
 const likeVideo = async (videoId: string, authUser: JwtPayload) => {
-
     const cacheKey = `video:${videoId}`;
     const likeKey = `video_like:${videoId}:${authUser.id}`;
 
+    let video: Video | null = null;
+
     const cachedVideo = await redis.get(cacheKey);
-
-    const video = cachedVideo ? JSON.parse(cachedVideo) : await prisma.video.findUnique({ where: { id: authUser.id } });
-
-    if (!video) {
-        throw new ApiError(StatusCodes.NOT_FOUND, "Video not found!");
+    if (cachedVideo) {
+        video = JSON.parse(cachedVideo);
+    }
+    else {
+        video = await prisma.video.findUnique({
+            where: { id: videoId },
+            include: {
+                user: {
+                    select: {
+                        name: true
+                    }
+                }
+            }
+        });
+        if (!video) throw new ApiError(StatusCodes.NOT_FOUND, "Video not found!");
+        await redis.setex(cacheKey, 180, JSON.stringify(video));
     }
 
-    const engagement = await prisma.engagement.findUnique({
-        where: {
-            videoId_userId: {
-                videoId,
-                userId: authUser.id
-            }
-        },
-    });
-
-    if (engagement) {
-        await prisma.engagement.delete({
+    const hasLiked =
+        (await redis.exists(likeKey)) ||
+        !!(await prisma.engagement.findUnique({
             where: {
                 videoId_userId: {
                     videoId,
                     userId: authUser.id
                 }
-            },
-        });
+            }
+        }));
 
-        await redis.del(likeKey);
+    return prisma.$transaction(async (tx) => {
+        if (hasLiked) {
+            await tx.engagement.delete({
+                where: { videoId_userId: { videoId, userId: authUser.id } },
+            });
 
-        return {
-            message: 'Video unliked successfully',
-            video: { id: video.id },
-        };
-    } else {
-        await prisma.engagement.create({
-            data: {
-                videoId,
-                userId: authUser.id
-            },
-        });
+            const updatedVideo = await tx.video.update({
+                where: { id: videoId },
+                data: { likeCount: { decrement: 1 } },
+                select: { likeCount: true },
+            });
 
-        // Set the like record in Redis
-        await redis.setex(likeKey, 60, "1"); // Cache the like for 60 seconds
+            await redis.del(likeKey);
+            await redis.setex(cacheKey, 180, JSON.stringify({ ...video, likeCount: updatedVideo.likeCount }));
 
-        return {
-            message: 'Video liked successfully',
-            video: { id: video.id, likeCount: video.likeCount + 1 },
-        };
-    }
+            return { message: "Video unliked successfully", videoId, likeCount: updatedVideo.likeCount };
+        } else {
+            await tx.engagement.create({
+                data: { videoId, userId: authUser.id },
+            });
+
+            const updatedVideo = await tx.video.update({
+                where: { id: videoId },
+                data: { likeCount: { increment: 1 } },
+                select: { likeCount: true },
+            });
+
+            await redis.setex(likeKey, 60, "1");
+            await redis.setex(cacheKey, 300, JSON.stringify({ ...video, likeCount: updatedVideo.likeCount }));
+
+            return { message: "Video liked successfully", videoId, likeCount: updatedVideo.likeCount };
+        }
+    });
 };
 
 
