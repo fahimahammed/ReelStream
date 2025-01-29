@@ -1,12 +1,14 @@
 import { Video } from "@prisma/client";
 import minioClient, { bucketName } from "../../utils/minioClient";
 import prisma from "../../utils/prismaClient";
-import { File } from "./video.interface";
+import { File, IVideoPayload } from "./video.interface";
 import { generateVideoThumbnail } from "./video.utils";
+import { JwtPayload } from "jsonwebtoken";
 
 
-const insertIntoDB = async (file: File): Promise<Video> => {
-    // const { title, description } = data;
+const uploadVideo = async (file: File, data: IVideoPayload, authUser: JwtPayload): Promise<Video> => {
+    const { title, description } = data;
+
     const videoFileName = `videos/${Date.now()}_${file.originalname}`;
     const thumbnailFileName = `thumbnails/${Date.now()}_thumbnail.png`;
 
@@ -26,10 +28,11 @@ const insertIntoDB = async (file: File): Promise<Video> => {
 
         const result = await prisma.video.create({
             data: {
-                title: "title as string",
-                description: "description as string",
+                title,
+                description,
                 url: videoPublicUrl,
-                thumbnailUrl
+                thumbnailUrl,
+                uploadedBy: authUser.id
             }
         });
 
@@ -42,6 +45,6 @@ const insertIntoDB = async (file: File): Promise<Video> => {
 };
 
 export const VideoService = {
-    insertIntoDB,
+    uploadVideo,
 };
 
