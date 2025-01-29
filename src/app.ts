@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import { videoRoutes } from './modules/video/video.routes';
 import { authRoutes } from './modules/auth/auth.routes';
 import globalExceptionHandler from './middlewares/globalExceptionHandler';
+import { analyticsRoutes } from './modules/analytics/analytics.routes';
 
 const app: Application = express();
 
@@ -18,6 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 // import routes from './routes';
 app.use('/api/v1/video/upload', videoRoutes);
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/analytics', analyticsRoutes);
 
 app.get('/', async (req: Request, res: Response) => {
     res.status(200).json({

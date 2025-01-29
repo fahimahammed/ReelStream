@@ -22,14 +22,6 @@
 
 ---
 
-## **🎥 Engagement (Likes & Views)**
-| Method | Endpoint | Description | Auth Required |
-|--------|---------|-------------|--------------|
-| `POST` | `/api/videos/:id/like` | Like/unlike a video | ✅ Yes |
-| `GET` | `/api/videos/:id/likes` | Get like count | ❌ No |
-
----
-
 ## **👤 User Profile & Video List**
 | Method | Endpoint | Description | Auth Required |
 |--------|---------|-------------|--------------|
