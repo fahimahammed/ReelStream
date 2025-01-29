@@ -100,10 +100,67 @@ const getVideoById = async (id: string, userIp: string) => {
 };
 
 
+const likeVideo = async (videoId: string, authUser: JwtPayload) => {
+
+    const cacheKey = `video:${videoId}`;
+    const likeKey = `video_like:${videoId}:${authUser.id}`;
+
+    const cachedVideo = await redis.get(cacheKey);
+
+    const video = cachedVideo ? JSON.parse(cachedVideo) : await prisma.video.findUnique({ where: { id: authUser.id } });
+
+    if (!video) {
+        throw new ApiError(StatusCodes.NOT_FOUND, "Video not found!");
+    }
+
+    const engagement = await prisma.engagement.findUnique({
+        where: {
+            videoId_userId: {
+                videoId,
+                userId: authUser.id
+            }
+        },
+    });
+
+    if (engagement) {
+        await prisma.engagement.delete({
+            where: {
+                videoId_userId: {
+                    videoId,
+                    userId: authUser.id
+                }
+            },
+        });
+
+        await redis.del(likeKey);
+
+        return {
+            message: 'Video unliked successfully',
+            video: { id: video.id },
+        };
+    } else {
+        await prisma.engagement.create({
+            data: {
+                videoId,
+                userId: authUser.id
+            },
+        });
+
+        // Set the like record in Redis
+        await redis.setex(likeKey, 60, "1"); // Cache the like for 60 seconds
+
+        return {
+            message: 'Video liked successfully',
+            video: { id: video.id, likeCount: video.likeCount + 1 },
+        };
+    }
+};
+
 
 export const VideoService = {
     uploadVideo,
     getAllVideos,
-    getVideoById
+    getVideoById,
+    likeVideo
 };
 
