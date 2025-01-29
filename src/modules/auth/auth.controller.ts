@@ -1,6 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import sendResponse from '../../utils/sendResponse';
 import { AuthServices } from './auth.service';
+import catchAsync from '../../utils/catchAsync';
+import env from '../../config/env';
+import { ILoginUserResponse } from './auth.interface';
 
 const registerUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -16,19 +19,47 @@ const registerUser = async (req: Request, res: Response, next: NextFunction) => 
     }
 };
 
-const loginUser = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const result = await AuthServices.loginUser(req.body);
-        sendResponse(res, {
-            statusCode: 200,
-            success: true,
-            message: 'User loggedin successfully',
-            data: result
-        });
-    } catch (error) {
-        next(error);
-    }
-};
+
+const loginUser = catchAsync(async (req: Request, res: Response) => {
+    const result = await AuthServices.loginUser(req.body);
+    const { refreshToken } = result;
+    const cookieOptions = {
+        secure: env.env === 'production',
+        httpOnly: true,
+    };
+
+    res.cookie('refreshToken', refreshToken, cookieOptions);
+
+    sendResponse<ILoginUserResponse>(res, {
+        statusCode: 200,
+        success: true,
+        message: 'User logged in successfully !',
+        data: {
+            accessToken: result.accessToken
+        },
+    });
+});
+
+// const refreshToken = catchAsync(async (req: Request, res: Response) => {
+//     const { refreshToken } = req.cookies;
+
+//     const result = await AuthService.refreshToken(refreshToken);
+
+//     // set refresh token into cookie
+//     const cookieOptions = {
+//         secure: config.env === 'production',
+//         httpOnly: true,
+//     };
+
+//     res.cookie('refreshToken', refreshToken, cookieOptions);
+
+//     sendResponse<IRefreshTokenResponse>(res, {
+//         statusCode: 200,
+//         success: true,
+//         message: 'User logged in successfully !',
+//         data: result,
+//     });
+// });
 
 export const AuthController = {
     registerUser,
