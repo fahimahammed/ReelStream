@@ -2,6 +2,7 @@ import { User } from "@prisma/client"
 import prisma from "../../utils/prismaClient"
 import ApiError from "../../errors/ApiError";
 import { hashedPassword } from "./auth.utils";
+import { StatusCodes } from "http-status-codes";
 
 const registerUser = async (payload: User): Promise<Partial<User>> => {
     const existingUser = await prisma.user.findUnique({
@@ -10,7 +11,7 @@ const registerUser = async (payload: User): Promise<Partial<User>> => {
         }
     });
 
-    if (existingUser) throw new ApiError(403, "Email already in use!")
+    if (existingUser) throw new ApiError(StatusCodes.BAD_REQUEST, "Email already in use!")
 
     payload.password = await hashedPassword(payload.password);
 
@@ -18,7 +19,7 @@ const registerUser = async (payload: User): Promise<Partial<User>> => {
         data: payload,
         select: {
             id: true,
-            username: true,
+            name: true,
             email: true,
             createdAt: true,
             updatedAt: true
