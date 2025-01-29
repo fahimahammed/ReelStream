@@ -1,4 +1,72 @@
 # ReelStream
+
+# Endpoint Listing
+---
+
+## **🔐 Authentication Routes**
+| Method | Endpoint         | Description              | Auth Required |
+|--------|----------------|-------------------------|--------------|
+| `POST` | `/api/auth/register` | Register a new user | ❌ No |
+| `POST` | `/api/auth/login` | Login and get JWT token | ❌ No |
+| `GET` | `/api/auth/profile` | Get logged-in user's profile | ✅ Yes |
+
+---
+
+## **📹 Video Management**
+| Method | Endpoint | Description | Auth Required |
+|--------|---------|-------------|--------------|
+| `POST` | `/api/videos/upload` | Upload a video reel | ✅ Yes |
+| `GET` | `/api/videos` | Get all public videos (paginated) | ❌ No |
+| `GET` | `/api/videos/:id` | Get video details (with caching) | ❌ No |
+| `DELETE` | `/api/videos/:id` | Delete user’s own video | ✅ Yes |
+
+---
+
+## **🎥 Engagement (Likes & Views)**
+| Method | Endpoint | Description | Auth Required |
+|--------|---------|-------------|--------------|
+| `POST` | `/api/videos/:id/like` | Like/unlike a video | ✅ Yes |
+| `GET` | `/api/videos/:id/views` | Increase view count | ❌ No |
+| `GET` | `/api/videos/:id/likes` | Get like count | ❌ No |
+
+---
+
+## **👤 User Profile & Video List**
+| Method | Endpoint | Description | Auth Required |
+|--------|---------|-------------|--------------|
+| `GET` | `/api/users/:id/videos` | Get all videos uploaded by a user | ❌ No |
+| `GET` | `/api/users/:id` | Get user profile info | ❌ No |
+
+---
+
+## **📊 Analytics & Admin**
+| Method | Endpoint | Description | Auth Required |
+|--------|---------|-------------|--------------|
+| `GET` | `/api/admin/analytics/videos` | Get engagement analytics (views, likes, uploads) | ✅ Yes (Admin) |
+| `GET` | `/api/admin/analytics/users` | Get user activity analytics | ✅ Yes (Admin) |
+
+---
+
+## **⚡ Performance & Monitoring**
+| Method | Endpoint | Description | Auth Required |
+|--------|---------|-------------|--------------|
+| `GET` | `/api/health` | Check API health | ❌ No |
+| `GET` | `/api/metrics` | Get API performance metrics | ✅ Yes (Admin) |
+
+---
+
+## **🚀 Features Covered**
+✅ **Authentication** – JWT-based auth  
+✅ **Video Upload** – MP4 validation, storage, and thumbnail generation  
+✅ **Engagement Features** – Like, view tracking  
+✅ **Caching & Rate Limiting** – Redis-based caching & request limiting  
+✅ **Analytics** – Video & user engagement tracking  
+✅ **Health & Monitoring** – API health check & metrics  
+
+---
+
+# important command
+
 docker run \
   -p 9000:9000 \
   -p 9001:9001 \
