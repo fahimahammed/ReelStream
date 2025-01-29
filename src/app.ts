@@ -3,6 +3,7 @@ import express, { Application, Request, Response } from 'express';
 import cookieParser from 'cookie-parser';
 import { videoRoutes } from './modules/video/video.routes';
 import { authRoutes } from './modules/auth/auth.routes';
+import globalExceptionHandler from './middlewares/globalExceptionHandler';
 
 const app: Application = express();
 
@@ -24,6 +25,8 @@ app.get('/', async (req: Request, res: Response) => {
         message: 'Server is working...!',
     });
 });
+
+app.use(globalExceptionHandler);
 
 // Handle 404 - Route Not Found
 app.use((req: Request, res: Response) => {

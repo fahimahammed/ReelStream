@@ -14,7 +14,7 @@ const globalExceptionHandler: ErrorRequestHandler = (
     res: Response,
     next: NextFunction
 ) => {
-    console.log('🚀 exceptionHandler ~ error:', error);
+    // console.log('🚀 exceptionHandler ~ error:', error);
 
     let errorMessages: {
         path: string | number;
