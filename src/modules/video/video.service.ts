@@ -2,7 +2,7 @@ import { Video } from "@prisma/client";
 import minioClient, { bucketName } from "../../utils/minioClient";
 import prisma from "../../utils/prismaClient";
 import { File, IVideoPayload } from "./video.interface";
-import { generateVideoThumbnail } from "./video.utils";
+import { compressVideo, generateVideoThumbnail } from "./video.utils";
 import { JwtPayload } from "jsonwebtoken";
 import redis from "../../utils/redisClient";
 import ApiError from "../../errors/ApiError";
@@ -12,20 +12,25 @@ import { StatusCodes } from "http-status-codes";
 const uploadVideo = async (file: File, data: IVideoPayload, authUser: JwtPayload): Promise<Video> => {
     const { title, description } = data;
 
-    const videoFileName = `videos/${Date.now()}_${file.originalname}`;
-    const thumbnailFileName = `thumbnails/${Date.now()}_thumbnail.png`;
+    const timestamp = Date.now();
+
+    // const originalVideoFileName = `videos/${timestamp}_${file.originalname}`;
+    const compressedVideoFileName = `videos/${timestamp}_${file.originalname}`;
+    const thumbnailFileName = `thumbnails/${timestamp}_thumbnail.png`;
 
     try {
-        const uploadedData = await minioClient.putObject(bucketName, videoFileName, file.buffer);
+        const compressedBuffer = await compressVideo(file.buffer);
+
+        const uploadedData = await minioClient.putObject(bucketName, compressedVideoFileName, compressedBuffer);
         console.log("Video uploaded successfully:", uploadedData);
 
-        const thumbnailBuffer = await generateVideoThumbnail(file.buffer);
+        const thumbnailBuffer = await generateVideoThumbnail(compressedBuffer);
         console.log("Thumbnail generated successfully");
 
         await minioClient.putObject(bucketName, thumbnailFileName, thumbnailBuffer);
         console.log("Thumbnail uploaded successfully");
 
-        const videoPublicUrl = `${process.env.MINIO_PUBLIC_URL}/${bucketName}/${videoFileName}`;
+        const videoPublicUrl = `${process.env.MINIO_PUBLIC_URL}/${bucketName}/${compressedVideoFileName}`;
         const thumbnailUrl = `${process.env.MINIO_PUBLIC_URL}/${bucketName}/${thumbnailFileName}`;
         console.log("Video public URL:", videoPublicUrl);
 
@@ -72,9 +77,20 @@ const getAllVideos = async (query: Record<string, unknown>) => {
         }
     });
 
-    await redis.setex(cacheKey, 300, JSON.stringify(videos));
+    const meta = {
+        page,
+        limit,
+        total: await prisma.video.count()
+    }
 
-    return videos;
+    const result = {
+        meta,
+        data: videos
+    }
+
+    await redis.setex(cacheKey, 300, JSON.stringify(result));
+
+    return result;
 };
 
 
