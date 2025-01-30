@@ -1,6 +1,6 @@
 # ReelStream
 
-ReelStream is a video streaming platform that allows users to upload, view, like/unlike, and get analytics on videos. It provides a modern backend architecture with microservices and utilizes several powerful tools like Postgres, Redis, Minio, and Prometheus for monitoring.
+ReelStream is a video streaming platform that enables users to upload, view, like/unlike videos, and access analytics. It is built using a microservices architecture and leverages technologies like `PostgreSQL`, `Redis`, `Minio`, `FFmpeg`, and `Prometheus` for monitoring.
 
 ---
 
@@ -9,162 +9,106 @@ ReelStream is a video streaming platform that allows users to upload, view, like
 - [Setup Instructions](#setup-instructions)
 - [API Documentation](#api-documentation)
 - [Architecture Diagram](#architecture-diagram)
-- [Technical Decisions Explanation](#technical-decisions-explanation)
+- [Technical Decisions](#technical-decisions)
 
 ---
 
 ## Setup Instructions
 
 ### Prerequisites
-1. **Docker**: Make sure you have Docker and Docker Compose installed.
-2. **PostgreSQL Client**: If you'd like to interact with the database manually.
+1. **Docker**: Ensure Docker and Docker Compose are installed.
+2. **PostgreSQL Client**: Required for manual database interactions.
+3. **FFmpeg**: Required for video processing and thumbnail generation.
 
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-repo/reelstream.git
+git clone https://github.com/fahimahammed/ReelStream-Server.git
 cd reelstream
 ```
 
 ### 2. Set Up Environment Variables
 
-Copy the `.env.example` file to `.env` and update the values for database and API keys.
+Copy the example environment file and configure necessary values:
 
 ```bash
 cp .env.example .env
 ```
 
-Ensure that the environment variables such as `DATABASE_URL`, `JWT_SECRET`, and others are set correctly.
+Ensure variables such as `DATABASE_URL`, `JWT_SECRET`, and others are correctly set.
 
-### 3. Build and Start the Docker Containers
+### 3. Build and Start Docker Containers
 
-Run the following command to build the containers:
+Run the following command to start all services:
 
 ```bash
 docker-compose up --build
 ```
 
-This will build all services (backend, PostgreSQL, Redis, Minio, etc.) and run them in containers.
+This initializes the backend, PostgreSQL, Redis, Minio, and other dependencies.
 
 ### 4. Access the Application
 
-- Backend: `http://localhost:3000`
-- Minio Console: `http://localhost:9001` (username: `fahim`, password: `fahim123`)
-- Prometheus: `http://localhost:9090`
+- **Backend API**: `http://localhost:3000`
+- **Minio Console**: `http://localhost:9001` (Username: `fahim`, Password: `fahim123`)
+- **Prometheus Dashboard**: `http://localhost:9090`
 
 ---
 
 ## API Documentation
 
 ### **1. Upload Video**
-
-**Endpoint:** `POST /api/v1/video/upload`
-
-**Request Headers:**
-- `Authorization`: Bearer `<token>`
-
-**Request Body:**
-- `video`: File (MP4 video file)
-- `data`: JSON Object
-  - `title`: (String) Title of the video
-  - `description`: (String) Description of the video
-
----
+- **Endpoint:** `POST /api/v1/videos`
+- **Headers:** `Authorization: Bearer <token>`
+- **Request Body:**
+  - `video`: File (MP4 format)
+  - `title`: (String) Video title
+  - `description`: (String) Video description
 
 ### **2. Get Videos (Paginated)**
-
-**Endpoint:** `GET /api/v1/video/upload?page=1`
-
-**Request Headers:**
-- `Authorization`: Bearer `<token>`
-
-**Query Params:**
-- `page`: (Integer) Page number for pagination
-
----
+- **Endpoint:** `GET /api/v1/videos?page=1`
+- **Query Params:** `page`: (Integer) Page number
 
 ### **3. Get Video By ID**
-
-**Endpoint:** `GET /api/v1/video/upload/{videoId}`
-
-**Request Headers:**
-- `Authorization`: Bearer `<token>`
-
-**Path Params:**
-- `videoId`: (String) ID of the video to fetch
-
----
+- **Endpoint:** `GET /api/v1/videos/{videoId}`
 
 ### **4. Like/Unlike Video**
-
-**Endpoint:** `POST /api/v1/video/upload/{videoId}/like`
-
-**Request Headers:**
-- `Authorization`: Bearer `<token>`
-
-**Path Params:**
-- `videoId`: (String) ID of the video to like/unlike
-
----
+- **Endpoint:** `POST /api/v1/videos/{videoId}/like`
+- **Headers:** `Authorization: Bearer <token>`
 
 ### **5. Register User**
-
-**Endpoint:** `POST /api/v1/auth/register`
-
-**Request Body:**
-- `name`: (String) Full name of the user
-- `email`: (String) Email address of the user
-- `password`: (String) Password for the user account
-
----
+- **Endpoint:** `POST /api/v1/auth/register`
+- **Request Body:**
+  - `name`: (String) Full name
+  - `email`: (String) Email address
+  - `password`: (String) Password
 
 ### **6. Login User**
-
-**Endpoint:** `POST /api/v1/auth/login`
-
-**Request Body:**
-- `email`: (String) Registered email address
-- `password`: (String) User password
-
----
+- **Endpoint:** `POST /api/v1/auth/login`
+- **Request Body:**
+  - `email`: (String) Registered email
+  - `password`: (String) User password
 
 ### **7. Refresh Token**
+- **Endpoint:** `POST /api/v1/auth/refresh`
+- **Request Body:**
+  - `refreshToken`: (String) Refresh token
 
-**Endpoint:** `POST /api/v1/auth/refresh-token`
-
-**Request Body:**
-- `refreshToken`: (String) The refresh token to get a new access token
-
----
-
-### **8. Get My Profile Analytics**
-
-**Endpoint:** `GET /api/v1/analytics`
-
-**Request Headers:**
-- `Authorization`: Bearer `<token>`
-
----
+### **8. Get Analytics**
+- **Endpoint:** `GET /api/v1/analytics`
+- **Headers:** `Authorization: Bearer <token>`
 
 ### **9. Health Check**
-
-**Endpoint:** `GET /health`
-
-**Description:** This endpoint checks the health status of the backend.
-
----
+- **Endpoint:** `GET /health`
+- **Description:** Checks the backend’s health status.
 
 ### **10. Metrics**
-
-**Endpoint:** `GET /metrics`
-
-**Description:** This endpoint provides metrics related to the performance of the backend.
+- **Endpoint:** `GET /metrics`
+- **Description:** Provides system performance metrics.
 
 ---
 
 ## Architecture Diagram
-
-Below is the architecture for **ReelStream**:
 
 ```plaintext
                             +------------+
@@ -179,7 +123,7 @@ Below is the architecture for **ReelStream**:
              +-------+-------+              | Storage)   |
                      |                      +------------+
              +-------v-------+                  
-             |    PostgreSQL  |
+             |    PostgreSQL |
              |  (Database)   |
              +-------+-------+
                      |
@@ -187,46 +131,51 @@ Below is the architecture for **ReelStream**:
              |    Redis      |
              | (Cache)       |
              +---------------+
-
+                     |
+             +-------v-------+
+             |    FFmpeg     |
+             |               |
+             +---------------+
 ```
 
-**Explanation of Components:**
-- **Frontend**: The client-side application which communicates with the backend through API calls.
-- **Backend**: The API server built with Node.js and Express that handles requests such as video upload, user registration, etc.
-- **PostgreSQL**: The relational database used for storing user and video data.
-- **Redis**: In-memory data store used for caching and improving performance.
-- **Minio**: Object storage service for storing video files.
+### Components:
+- **Frontend**: Communicates with the backend.
+- **Backend**: Handles API requests (Node.js + Express).
+- **PostgreSQL**: Stores structured data.
+- **Redis**: Improves performance with caching.
+- **Minio**: Manages video storage.
+- **FFmpeg**: Processes video encoding and generates thumbnails.
 
 ---
 
-## Technical Decisions Explanation
+## Technical Decisions
 
-1. **PostgreSQL**: 
-   - Chosen for its robust relational database capabilities. It is ideal for storing structured data like user information and video metadata.
+### **1. PostgreSQL**
+- Chosen for its relational database capabilities, ideal for structured data.
 
-2. **Redis**:
-   - Used as an in-memory cache for faster access to frequently queried data. This improves the overall performance of the platform, especially when querying video lists or user engagement stats.
+### **2. Redis**
+- Utilized for caching frequently accessed data, enhancing performance.
 
-3. **Minio**:
-   - Chosen for object storage because of its compatibility with Amazon S3, making it scalable and cost-effective for storing large video files.
+### **3. Minio**
+- Provides scalable object storage, compatible with AWS S3.
 
-4. **JWT for Authentication**:
-   - JSON Web Tokens (JWT) are used for stateless authentication. They allow the backend to authenticate requests securely and ensure user sessions are maintained.
+### **4. JWT Authentication**
+- Ensures secure, stateless user authentication.
 
-5. **Docker & Docker Compose**:
-   - The project is containerized using Docker to ensure consistency across development, testing, and production environments. Docker Compose is used to orchestrate multiple services like the backend, database, cache, and storage.
+### **5. Docker & Docker Compose**
+- Facilitates consistent development and deployment environments.
 
-6. **FFmpeg**:
-   - FFmpeg is used to handle video processing tasks such as encoding, transcoding, and streaming. It is a powerful open-source tool that integrates seamlessly with the platform.
+### **6. FFmpeg**
+- Used for video processing, including encoding, transcoding, and thumbnail generation.
 
-7. **Prometheus**:
-   - Prometheus is used for monitoring system performance and gathering metrics. It helps track key performance indicators like API response time, system health, and database performance.
+### **7. Prometheus**
+- Monitors system performance and collects metrics.
 
 ---
 
-## License
+This documentation provides a clear understanding of ReelStream’s setup, API endpoints, architecture, and technical choices.
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
 
 ---
 
