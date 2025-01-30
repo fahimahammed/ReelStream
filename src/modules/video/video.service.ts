@@ -96,19 +96,59 @@ const getVideoById = async (id: string, userIp: string) => {
     const viewKey = `video_view:${id}:${userIp}`;
 
     const cachedVideo = await redis.get(cacheKey);
+    let result;
 
-    const video = cachedVideo ? JSON.parse(cachedVideo) : await prisma.video.findUnique({
-        where: { id },
-        include: {
-            user: {
-                select: {
-                    name: true
+    if (cachedVideo) {
+        result = JSON.parse(cachedVideo);
+    }
+    else {
+        const video = await prisma.video.findUnique({
+            where: { id },
+            include: {
+                user: {
+                    select: {
+                        name: true
+                    }
                 }
             }
-        }
-    });
+        });
 
-    if (!video) {
+        const prevVideoId = await prisma.video.findFirst({
+            where: {
+                id: {
+                    lt: id,
+                }
+            },
+            select: {
+                id: true
+            },
+            orderBy: {
+                id: 'desc',
+            }
+        });
+
+        const nextVideoId = await prisma.video.findFirst({
+            where: {
+                id: {
+                    gt: id,
+                }
+            },
+            select: {
+                id: true
+            },
+            orderBy: {
+                id: 'asc',
+            }
+        });
+
+        result = {
+            prev: prevVideoId,
+            next: nextVideoId,
+            video
+        }
+    }
+
+    if (!result) {
         throw new ApiError(StatusCodes.NOT_FOUND, "Video not found!");
     }
 
@@ -122,11 +162,12 @@ const getVideoById = async (id: string, userIp: string) => {
     }
 
     if (!cachedVideo) {
-        await redis.setex(cacheKey, 180, JSON.stringify(video));
+        await redis.setex(cacheKey, 180, JSON.stringify(result));
     }
 
-    return video;
+    return result;
 };
+
 
 
 const likeVideo = async (videoId: string, authUser: JwtPayload) => {
