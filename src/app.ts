@@ -6,6 +6,7 @@ import { authRoutes } from './modules/auth/auth.routes';
 import globalExceptionHandler from './middlewares/globalExceptionHandler';
 import { analyticsRoutes } from './modules/analytics/analytics.routes';
 import logger from './utils/logger';
+import { healthCheck, metricsMiddleware, metricsRoute } from './middlewares/metrics';
 
 const app: Application = express();
 
@@ -14,6 +15,7 @@ app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(metricsMiddleware);
 
 // Logging middleware to track API requests
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -44,6 +46,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use('/api/v1/video/upload', videoRoutes);
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
+app.get('/health', healthCheck);
+app.get('/metrics', metricsRoute);
 
 app.get('/', async (req: Request, res: Response) => {
     res.status(200).json({

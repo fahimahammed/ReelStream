@@ -58,3 +58,5 @@ docker run \
   -e "MINIO_ROOT_USER=fahim" \
   -e "MINIO_ROOT_PASSWORD=fahim123" \
   quay.io/minio/minio server /data --console-address ":9001"
+
+  prometheus --config.file=prometheus.yml
