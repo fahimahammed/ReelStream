@@ -6,3 +6,9 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:3000']  # Replace with the correct address of your app
     metrics_path: '/metrics'  # The path where Prometheus will scrape metrics from
+
+# scrape_configs:
+#   - job_name: 'api-metrics'
+#     static_configs:
+#       - targets: ['reelstream-backend:3000']  # Use the backend container name instead of localhost
+#     metrics_path: '/metrics'  # The path where Prometheus will scrape metrics from
