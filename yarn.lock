@@ -440,6 +440,11 @@
     "@types/qs" "*"
     "@types/serve-static" "*"
 
+"@types/ffprobe-static@^2.0.3":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@types/ffprobe-static/-/ffprobe-static-2.0.3.tgz#ecd06e9f37c033e9eea96124bd078af729229307"
+  integrity sha512-86Q8dIzhjknxA6935ZcVLkVU3t6bP+F08mdriWZk2+3UqjxIbT3QEADjbO5Yq8826cVs/aZBREVZ7jUoSTgHiw==
+
 "@types/fluent-ffmpeg@^2.1.27":
   version "2.1.27"
   resolved "https://registry.yarnpkg.com/@types/fluent-ffmpeg/-/fluent-ffmpeg-2.1.27.tgz#c4eac6fbda30bb6316d2220c8faf54f48db0812d"
@@ -1460,6 +1465,11 @@ ffmpeg-static@^5.2.0:
     env-paths "^2.2.0"
     https-proxy-agent "^5.0.0"
     progress "^2.0.3"
+
+ffprobe-static@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/ffprobe-static/-/ffprobe-static-3.1.0.tgz#982cfa1de111a4d6043f6fc208f64a82b53034c9"
+  integrity sha512-Dvpa9uhVMOYivhHKWLGDoa512J751qN1WZAIO+Xw4L/mrUSPxS4DApzSUDbCFE/LUq2+xYnznEahTd63AqBSpA==
 
 file-entry-cache@^8.0.0:
   version "8.0.0"

@@ -2,7 +2,7 @@ import { Video } from "@prisma/client";
 import minioClient, { bucketName } from "../../utils/minioClient";
 import prisma from "../../utils/prismaClient";
 import { File, IVideoPayload } from "./video.interface";
-import { compressVideo, generateVideoThumbnail } from "./video.utils";
+import { compressVideo } from "./video.utils";
 import { JwtPayload } from "jsonwebtoken";
 import redis from "../../utils/redisClient";
 import ApiError from "../../errors/ApiError";
@@ -21,9 +21,11 @@ const uploadVideo = async (file: File, data: IVideoPayload, authUser: JwtPayload
     try {
         const compressedBuffer = await compressVideo(file.buffer);
         await minioClient.putObject(bucketName, compressedVideoFileName, compressedBuffer);
+        console.log("video uploaded")
 
-        const thumbnailBuffer = await generateVideoThumbnail(compressedBuffer);
-        await minioClient.putObject(bucketName, thumbnailFileName, thumbnailBuffer);
+        // const thumbnailBuffer = await generateVideoThumbnail(compressedBuffer);
+        // await minioClient.putObject(bucketName, thumbnailFileName, thumbnailBuffer);
+        // console.log("thumbnail uploaded")
 
         const videoPublicUrl = `${process.env.MINIO_PUBLIC_URL}/${bucketName}/${compressedVideoFileName}`;
         const thumbnailUrl = `${process.env.MINIO_PUBLIC_URL}/${bucketName}/${thumbnailFileName}`;

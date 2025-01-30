@@ -69,6 +69,13 @@ services:
     networks:
       - reelstream-network
 
+  ffmpeg:
+    image: jrottenberg/ffmpeg:latest
+    container_name: reelstream-ffmpeg
+    restart: always
+    networks:
+      - reelstream-network
+
 volumes:
   postgres_data:
   minio_data:
