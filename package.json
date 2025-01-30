@@ -6,7 +6,10 @@
   "author": "Fahim Ahammed Firoz",
   "license": "MIT",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts"
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "migrate": "npx prisma migrate dev",
+    "build": "tsc",
+    "start": "node dist/server.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
