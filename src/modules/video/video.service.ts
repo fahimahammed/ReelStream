@@ -20,19 +20,13 @@ const uploadVideo = async (file: File, data: IVideoPayload, authUser: JwtPayload
 
     try {
         const compressedBuffer = await compressVideo(file.buffer);
-
-        const uploadedData = await minioClient.putObject(bucketName, compressedVideoFileName, compressedBuffer);
-        console.log("Video uploaded successfully:", uploadedData);
+        await minioClient.putObject(bucketName, compressedVideoFileName, compressedBuffer);
 
         const thumbnailBuffer = await generateVideoThumbnail(compressedBuffer);
-        console.log("Thumbnail generated successfully");
-
         await minioClient.putObject(bucketName, thumbnailFileName, thumbnailBuffer);
-        console.log("Thumbnail uploaded successfully");
 
         const videoPublicUrl = `${process.env.MINIO_PUBLIC_URL}/${bucketName}/${compressedVideoFileName}`;
         const thumbnailUrl = `${process.env.MINIO_PUBLIC_URL}/${bucketName}/${thumbnailFileName}`;
-        console.log("Video public URL:", videoPublicUrl);
 
         const result = await prisma.video.create({
             data: {
@@ -46,9 +40,12 @@ const uploadVideo = async (file: File, data: IVideoPayload, authUser: JwtPayload
 
         return result;
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-        console.error("Error uploading video and thumbnail:", error);
-        throw new Error("Error uploading video and thumbnail");
+        await minioClient.removeObject(bucketName, compressedVideoFileName);
+        await minioClient.removeObject(bucketName, thumbnailFileName);
+
+        throw new ApiError(StatusCodes.FAILED_DEPENDENCY, `Error uploading video and thumbnail.`);
     }
 };
 
