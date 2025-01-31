@@ -1,24 +1,21 @@
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import sendResponse from '../../utils/sendResponse';
 import { AuthServices } from './auth.service';
 import catchAsync from '../../utils/catchAsync';
 import env from '../../config/env';
 import { ILoginUserResponse, IRefreshTokenResponse } from './auth.interface';
 import { User } from '@prisma/client';
+import { StatusCodes } from 'http-status-codes';
 
-const registerUser = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const result = await AuthServices.registerUser(req.body);
-        sendResponse(res, {
-            statusCode: 201,
-            success: true,
-            message: 'User registered successfully',
-            data: result
-        });
-    } catch (error) {
-        next(error);
-    }
-};
+const registerUser = catchAsync(async (req: Request, res: Response) => {
+    const result = await AuthServices.registerUser(req.body);
+    sendResponse(res, {
+        statusCode: StatusCodes.CREATED,
+        success: true,
+        message: 'User registered successfully',
+        data: result
+    });
+})
 
 
 const loginUser = catchAsync(async (req: Request, res: Response) => {
@@ -32,7 +29,7 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
     res.cookie('refreshToken', refreshToken, cookieOptions);
 
     sendResponse<ILoginUserResponse>(res, {
-        statusCode: 200,
+        statusCode: StatusCodes.OK,
         success: true,
         message: 'User logged in successfully !',
         data: {
@@ -58,7 +55,7 @@ const myProfile = catchAsync(async (req: Request, res: Response) => {
     const result = await AuthServices.myProfile(req.user);
 
     sendResponse<User>(res, {
-        statusCode: 200,
+        statusCode: StatusCodes.OK,
         success: true,
         message: 'Access token generated!',
         data: result,

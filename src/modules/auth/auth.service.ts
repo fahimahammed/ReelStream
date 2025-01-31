@@ -24,6 +24,7 @@ const registerUser = async (payload: User): Promise<Partial<User>> => {
         select: {
             id: true,
             name: true,
+            username: true,
             email: true,
             createdAt: true,
             updatedAt: true

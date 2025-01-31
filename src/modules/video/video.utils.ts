@@ -25,10 +25,10 @@ export const compressVideo = async (
         await new Promise<void>((resolve, reject) => {
             ffmpeg(tempInputPath)
                 .outputOptions([
-                    '-preset fast',  // ⚡ Faster encoding
-                    '-crf 28',       // 🎯 Balance between quality & compression
-                    '-b:v 1M',       // 📉 Bitrate control for smaller size
-                    '-movflags +faststart' // 📲 Helps for streaming
+                    '-preset fast',
+                    '-crf 28',
+                    '-b:v 1M',
+                    '-movflags +faststart'
                 ])
                 .output(tempOutputPath)
                 .on('progress', (progress) => {

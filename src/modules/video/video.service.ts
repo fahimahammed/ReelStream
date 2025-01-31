@@ -102,13 +102,13 @@ const getAllVideos = async (query: Record<string, unknown>) => {
         data: videos
     }
 
-    await redis.setex(cacheKey, 300, JSON.stringify(result));
+    await redis.setex(cacheKey, 180, JSON.stringify(result));
 
     return result;
 };
 
 
-const getVideoById = async (id: string, userIp: string) => {
+const getVideoById = async (id: string, userIp: string): Promise<Video> => {
     const cacheKey = `video:${id}`;
     const viewKey = `video_view:${id}:${userIp}`;
 
@@ -236,7 +236,7 @@ const likeVideo = async (videoId: string, authUser: JwtPayload) => {
             });
 
             await redis.del(likeKey);
-            await redis.setex(cacheKey, 180, JSON.stringify({ ...video, likeCount: updatedVideo.likeCount }));
+            await redis.setex(cacheKey, 60, JSON.stringify({ ...video, likeCount: updatedVideo.likeCount }));
 
             return { message: "Video unliked successfully", videoId, likeCount: updatedVideo.likeCount };
         } else {
@@ -251,7 +251,7 @@ const likeVideo = async (videoId: string, authUser: JwtPayload) => {
             });
 
             await redis.setex(likeKey, 60, "1");
-            await redis.setex(cacheKey, 300, JSON.stringify({ ...video, likeCount: updatedVideo.likeCount }));
+            await redis.setex(cacheKey, 60, JSON.stringify({ ...video, likeCount: updatedVideo.likeCount }));
 
             return { message: "Video liked successfully", videoId, likeCount: updatedVideo.likeCount };
         }

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import promClient from 'prom-client';
+import prisma from '../utils/prismaClient';
 
 const register = new promClient.Registry();
 
@@ -29,8 +30,28 @@ export const metricsMiddleware = (req: Request, res: Response, next: NextFunctio
     next();
 };
 
-export const healthCheck = (req: Request, res: Response) => {
-    res.status(200).json({ success: true, message: 'API is healthy!' });
+export const healthCheck = async (req: Request, res: Response): Promise<void> => {
+    try {
+        // Execute SELECT 1 query to check database connection
+        await prisma.$queryRaw`SELECT 1`;
+
+        // If the query runs successfully, respond with API health status
+        res.status(200).json({
+            success: true,
+            message: 'API is healthy!',
+            dbStatus: 'Database is connected successfully.',
+            timestamp: new Date().toISOString(),
+        });
+    } catch (error) {
+        // If there is an error connecting to the database
+        console.error("Database connection error:", error);
+        res.status(500).json({
+            success: false,
+            message: 'API is unhealthy!',
+            error: 'Database connection failed.',
+            timestamp: new Date().toISOString(),
+        });
+    }
 };
 
 export const metricsRoute = async (req: Request, res: Response) => {
