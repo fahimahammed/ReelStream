@@ -7,9 +7,15 @@ import { JwtPayload } from "jsonwebtoken";
 import redis from "../../utils/redisClient";
 import ApiError from "../../errors/ApiError";
 import { StatusCodes } from "http-status-codes";
+import { Server as SocketIOServer } from 'socket.io';
 
 
-const uploadVideo = async (file: File, data: IVideoPayload, authUser: JwtPayload): Promise<Video> => {
+const uploadVideo = async (
+    file: File,
+    data: IVideoPayload,
+    authUser: JwtPayload,
+    io: SocketIOServer
+): Promise<Video> => {
     const { title, description } = data;
 
     const timestamp = Date.now();
@@ -18,8 +24,21 @@ const uploadVideo = async (file: File, data: IVideoPayload, authUser: JwtPayload
     const compressedVideoFileName = `videos/${timestamp}_${file.originalname}`;
     const thumbnailFileName = `thumbnails/${timestamp}_thumbnail.png`;
 
+    const totalSize = file.buffer.length;
+    console.log({ file })
+    let uploadedSize = 0;
+
+    const progressUpdate = (chunkSize: number) => {
+        console.log({ chunkSize })
+        uploadedSize += chunkSize;
+        console.log("+ ", { uploadedSize })
+        const progress = (uploadedSize / totalSize) * 100 * 100 * 100;
+        io.emit('uploadProgress', { progress: Math.min(progress, 100) });
+    };
+
     try {
-        const compressedBuffer = await compressVideo(file.buffer);
+
+        const compressedBuffer = await compressVideo(file.buffer, progressUpdate);
         await minioClient.putObject(bucketName, compressedVideoFileName, compressedBuffer);
         console.log("video uploaded")
 

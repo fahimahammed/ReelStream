@@ -6,7 +6,7 @@ import { authRoutes } from './modules/auth/auth.routes';
 import globalExceptionHandler from './middlewares/globalExceptionHandler';
 import { analyticsRoutes } from './modules/analytics/analytics.routes';
 import logger from './utils/logger';
-import { healthCheck, metricsMiddleware, metricsRoute } from './middlewares/metrics';
+import { healthCheck, metricsMiddleware, metricsRoute } from './middlewares/metrics'
 
 const app: Application = express();
 

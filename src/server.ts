@@ -1,5 +1,7 @@
 import { Server } from 'http';
 import { PrismaClient } from '@prisma/client';
+import { createServer } from 'http';
+import { initSocket } from './config/socket'; // Import Socket.io initialization
 import app from './app';
 import env from './config/env';
 import logger from './utils/logger';
@@ -7,6 +9,9 @@ import redisClient from './utils/redisClient';
 import minioClient from './utils/minioClient';
 
 const prisma = new PrismaClient();
+const httpServer = createServer(app); // Create HTTP server for Socket.io
+const io = initSocket(httpServer); // Initialize Socket.io
+
 let server: Server | null = null;
 
 async function connectToDatabase() {
@@ -39,7 +44,6 @@ async function checkMinioConnection() {
     }
 }
 
-
 function gracefulShutdown(signal: string) {
     logger.info(`🔄 Received ${signal}. Shutting down gracefully...`);
 
@@ -56,22 +60,19 @@ function gracefulShutdown(signal: string) {
     }
 }
 
-
 async function bootstrap() {
     try {
-        // Connect to the database
         await connectToDatabase();
-
-        // Check Redis connection
         await checkRedisConnection();
-
-        // Check MinIO connection
         await checkMinioConnection();
 
         // Start the server
-        server = app.listen(env.port, () => {
-            logger.info(`Server is running on port ${env.port}`);
+        server = httpServer.listen(env.port, () => {
+            logger.info(`🚀 Server is running on port ${env.port}`);
         });
+
+        io.listen(3002); // Start Socket.io on port 3002
+        logger.info('📡 Socket.io is running on port 3002');
 
         // Handle termination signals
         process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));

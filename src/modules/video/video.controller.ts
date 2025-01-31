@@ -2,14 +2,17 @@ import { Request, Response } from 'express';
 import sendResponse from '../../utils/sendResponse';
 import { VideoService } from './video.service';
 import catchAsync from '../../utils/catchAsync';
+import { getSocketInstance } from '../../config/socket';
 
 const uploadVideo = catchAsync(async (req: Request, res: Response) => {
     const file = req.file;
     if (!file) throw new Error("File is required!");
 
+    const io = getSocketInstance();
+
     console.log("user: ", req.user);
 
-    const result = await VideoService.uploadVideo(file, req.body, req.user);
+    const result = await VideoService.uploadVideo(file, req.body, req.user, io);
     sendResponse(res, {
         statusCode: 201,
         success: true,

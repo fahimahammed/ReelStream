@@ -46,7 +46,11 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 //     });
 // };
 
-export const compressVideo = async (videoBuffer: Buffer): Promise<Buffer> => {
+export const compressVideo = async (
+    videoBuffer: Buffer,
+    progressUpdate: (chunkSize: number) => void
+): Promise<Buffer> => {
+
     const tempInputPath = path.join(tmpdir(), `input_${Date.now()}.mp4`);
     const tempOutputPath = path.join(tmpdir(), `output_${Date.now()}.mp4`);
 
@@ -62,6 +66,10 @@ export const compressVideo = async (videoBuffer: Buffer): Promise<Buffer> => {
                     '-movflags +faststart' // 📲 Helps for streaming
                 ])
                 .output(tempOutputPath)
+                .on('progress', (progress) => {
+                    console.log("progress: ", progress.targetSize);
+                    progressUpdate(progress.targetSize)
+                })
                 .on('end', () => resolve())
                 .on('error', reject)
                 .run();
