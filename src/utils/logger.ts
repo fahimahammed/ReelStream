@@ -2,11 +2,12 @@ import winston from 'winston';
 import path from 'path';
 import 'winston-daily-rotate-file';
 import fs from 'fs';
+import env from '../config/env';
 
 
 const logDirectory = path.join(__dirname, '../../logs');
 
-const logLevel = process.env.NODE_ENV === 'production' ? 'warn' : 'debug';
+const logLevel = env.env === 'production' ? 'warn' : 'debug';
 
 
 if (!fs.existsSync(logDirectory)) {

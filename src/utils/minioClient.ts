@@ -1,11 +1,12 @@
 import { Client } from 'minio';
+import env from '../config/env';
 
 const minioClient = new Client({
-    endPoint: process.env.MINIO_ENDPOINT || 'localhost',
-    port: Number(process.env.MINIO_PORT) || 9000,
-    useSSL: process.env.MINIO_USE_SSL === 'true',
-    accessKey: process.env.MINIO_ACCESS_KEY || 'minioadmin',
-    secretKey: process.env.MINIO_SECRET_KEY || 'minioadmin',
+    endPoint: env.minio.endpoint,
+    port: Number(env.minio.port),
+    useSSL: env.minio.use_ssl,
+    accessKey: env.minio.access_key,
+    secretKey: env.minio.secret_key,
 });
 
 export const bucketName = 'reels';

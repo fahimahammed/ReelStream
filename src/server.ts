@@ -66,12 +66,11 @@ async function bootstrap() {
         await checkRedisConnection();
         await checkMinioConnection();
 
-        // Start the server
         server = httpServer.listen(env.port, () => {
             logger.info(`🚀 Server is running on port ${env.port}`);
         });
 
-        io.listen(3002); // Start Socket.io on port 3002
+        io.listen(3002);
         logger.info('📡 Socket.io is running on port 3002');
 
         // Handle termination signals

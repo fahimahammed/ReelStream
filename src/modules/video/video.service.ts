@@ -8,6 +8,7 @@ import redis from "../../utils/redisClient";
 import ApiError from "../../errors/ApiError";
 import { StatusCodes } from "http-status-codes";
 import { Server as SocketIOServer } from 'socket.io';
+import env from "../../config/env";
 
 
 const uploadVideo = async (
@@ -41,8 +42,8 @@ const uploadVideo = async (
         const thumbnailBuffer = await generateVideoThumbnail(compressedBuffer);
         await minioClient.putObject(bucketName, thumbnailFileName, thumbnailBuffer);
 
-        const videoPublicUrl = `${process.env.MINIO_PUBLIC_URL}/${bucketName}/${compressedVideoFileName}`;
-        const thumbnailUrl = `${process.env.MINIO_PUBLIC_URL}/${bucketName}/${thumbnailFileName}`;
+        const videoPublicUrl = `${env.minio.public_url}/${bucketName}/${compressedVideoFileName}`;
+        const thumbnailUrl = `${env.minio.public_url}/${bucketName}/${thumbnailFileName}`;
 
         const result = await prisma.video.create({
             data: {

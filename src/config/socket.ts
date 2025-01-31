@@ -11,8 +11,6 @@ export const initSocket = (server: Server) => {
         }
     });
 
-    console.log("✅ Socket.io initialized on port 3002");
-
     return io;
 };
 
