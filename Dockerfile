@@ -16,4 +16,4 @@ RUN prisma generate
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "yarn migrate && yarn build && yarn start"]
+CMD ["sh", "-c", "prisma migrate deploy && yarn build && yarn start"]
