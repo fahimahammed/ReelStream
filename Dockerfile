@@ -1,5 +1,7 @@
 FROM node:18-alpine
 
+RUN apk add --no-cache ffmpeg
+
 WORKDIR /app
 
 COPY package.json yarn.lock ./
@@ -11,8 +13,6 @@ COPY . .
 RUN yarn global add prisma
 
 RUN prisma generate
-
-RUN yarn add ffmpeg-static ffprobe-static
 
 EXPOSE 3000
 

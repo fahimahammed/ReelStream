@@ -9,12 +9,14 @@ services:
       - postgres
       - redis
       - minio
+      - ffmpeg
     ports:
       - "3000:3000" # Changed port to 3000 on host machine
     env_file:
       - .env
     volumes:
       - ./uploads:/app/uploads
+      - ./videos:/app/videos
     networks:
       - reelstream-network
 
@@ -73,6 +75,8 @@ services:
     image: jrottenberg/ffmpeg:latest
     container_name: reelstream-ffmpeg
     restart: always
+    volumes:
+      - ./videos:/app/videos
     networks:
       - reelstream-network
 
