@@ -19,8 +19,6 @@ const uploadVideo = async (
 ): Promise<Video> => {
     const { title, description } = data;
 
-    console.log("------------ uuuuu uploaded __-----------------")
-
     const timestamp = Date.now();
 
     // const originalVideoFileName = `videos/${timestamp}_${file.originalname}`;
@@ -37,14 +35,11 @@ const uploadVideo = async (
     };
 
     try {
-        console.log("------------ uuuuu uploaded __-----------------")
         const compressedBuffer = await compressVideo(file.buffer, progressUpdate);
         await minioClient.putObject(bucketName, compressedVideoFileName, compressedBuffer);
-        console.log("------------ Video uploaded __-----------------")
 
         const thumbnailBuffer = await generateVideoThumbnail(compressedBuffer);
         await minioClient.putObject(bucketName, thumbnailFileName, thumbnailBuffer);
-        console.log("------------ thumbnail uploaded __-----------------")
 
         const videoPublicUrl = `${env.minio.public_url}/${bucketName}/${compressedVideoFileName}`;
         const thumbnailUrl = `${env.minio.public_url}/${bucketName}/${thumbnailFileName}`;

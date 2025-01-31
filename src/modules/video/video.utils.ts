@@ -95,16 +95,10 @@ export async function generateVideoThumbnail(buffer: Buffer): Promise<Buffer> {
 //     // const inputFileName = path.basename(tempVideoPath);
 //     // const outputFileName = path.basename(tempThumbnailPath);
 
-//     // Docker command
-//     // const dockerCommand = `docker exec reelstream-ffmpeg ffmpeg -i /input/${inputFileName} -ss 00:00:01 -vframes 1 -s 1080x1920 /output/${outputFileName}`;
 //     // const dockerCommand = `docker run --rm -v "${inputDir}:/input" -v "${outputDir}:/output" jrottenberg/ffmpeg -i /input/${inputFileName} -ss 00:00:01 -vframes 1 -s 1080x1920 /output/${outputFileName}`;
-//     // const dockerCommand = `docker run --rm --network=reelstream-network -v "${inputDir}:/input" -v "${outputDir}:/output" jrottenberg/ffmpeg -i /input/${inputFileName} -ss 00:00:01 -vframes 1 -s 1080x1920 /output/${outputFileName}`;
-//     // const dockerCommand = `docker exec reelstream-ffmpeg ffmpeg -i /input/${inputFileName} -ss 00:00:01 -vframes 1 -s 1080x1920 /output/${outputFileName}`;
-
-//     const ffmpegCommand = `ffmpeg -i ${tempVideoPath} -ss 00:00:01 -vframes 1 -s 1080x1920 ${tempThumbnailPath}`;
 
 //     return new Promise((resolve, reject) => {
-//         exec(`docker exec reelstream-ffmpeg ${ffmpegCommand}`, (err, stdout, stderr) => {
+//         exec(dockerCommand, (err, stdout, stderr) => {
 //             if (err) {
 //                 console.error('Error stderr:', stderr);
 //                 reject(`Error generating thumbnail: ${stderr}`);
@@ -120,41 +114,3 @@ export async function generateVideoThumbnail(buffer: Buffer): Promise<Buffer> {
 //         });
 //     });
 // }
-
-
-// if (!ffmpegPath) {
-//     throw new Error('FFmpeg binary not found. Please ensure ffmpeg-static is installed correctly.');
-// }
-
-// ffmpeg.setFfmpegPath(ffmpegPath);
-
-// export const generateVideoThumbnail = (videoBuffer: Buffer): Promise<Buffer> => {
-//     return new Promise((resolve, reject) => {
-//         const tempVideoPath = path.join(__dirname, 'temp_video.mp4');
-//         const tempThumbnailPath = path.join(__dirname, 'temp_thumbnail.png');
-
-//         fs.writeFileSync(tempVideoPath, videoBuffer);
-
-//         // Generate the thumbnail using ffmpeg
-//         ffmpeg(tempVideoPath)
-//             .screenshots({
-//                 count: 1,
-//                 folder: __dirname,
-//                 filename: 'temp_thumbnail.png',
-//                 size: '1080x1920',
-//             })
-//             .on('end', () => {
-//                 const thumbnailBuffer = fs.readFileSync(tempThumbnailPath);
-
-//                 // Clean up temporary files
-//                 fs.unlinkSync(tempVideoPath);
-//                 fs.unlinkSync(tempThumbnailPath);
-
-//                 resolve(thumbnailBuffer);
-//             })
-//             .on('error', (err) => {
-//                 fs.unlinkSync(tempVideoPath);
-//                 reject(new Error('Error generating thumbnail: ' + err.message));
-//             });
-//     });
-// };
