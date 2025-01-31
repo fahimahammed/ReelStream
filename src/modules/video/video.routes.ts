@@ -14,7 +14,7 @@ router.get(
 
 
 router.post(
-    '/',
+    '/upload',
     auth,
     upload.single('video'),
     parseBody,

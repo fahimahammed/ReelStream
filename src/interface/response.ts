@@ -1,5 +1,8 @@
 export interface IGenericResponse<T> {
-    meta: {
+    statusCode: number,
+    success: boolean,
+    message: string,
+    meta?: {
         page: number;
         limit: number;
         total: number;

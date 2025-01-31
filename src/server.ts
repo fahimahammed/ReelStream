@@ -52,6 +52,7 @@ function gracefulShutdown(signal: string) {
             logger.info('✅ HTTP server closed.');
 
             await prisma.$disconnect();
+            await io.close();
             logger.info('✅ Database connection closed.');
             process.exit(0);
         });

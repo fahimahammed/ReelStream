@@ -1,11 +1,9 @@
 import cors from 'cors';
 import express, { Application, Request, Response } from 'express';
 import cookieParser from 'cookie-parser';
-import { videoRoutes } from './modules/video/video.routes';
-import { authRoutes } from './modules/auth/auth.routes';
 import globalExceptionHandler from './middlewares/globalExceptionHandler';
-import { analyticsRoutes } from './modules/analytics/analytics.routes';
 import { healthCheck, metricsMiddleware, metricsRoute } from './middlewares/metrics'
+import router from './routes';
 
 const app: Application = express();
 
@@ -17,9 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(metricsMiddleware);
 
 
-app.use('/api/v1/video/upload', videoRoutes);
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/analytics', analyticsRoutes);
+app.use('/api/v1', router);
 app.get('/health', healthCheck);
 app.get('/metrics', metricsRoute);
 

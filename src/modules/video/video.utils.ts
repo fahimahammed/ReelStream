@@ -52,53 +52,20 @@ export const compressVideo = async (
     }
 };
 
-export async function generateVideoThumbnail(buffer: Buffer): Promise<Buffer> {
-    const videoDir = '/app/videos'; // Shared volume path inside backend container
-    const tempVideoPath = path.join(videoDir, 'temp_video.mp4');
-    const tempThumbnailPath = path.join(videoDir, 'temp_thumbnail.png');
-
-    // Write the incoming video buffer to a temporary file
-    fs.writeFileSync(tempVideoPath, buffer);
-
-    // FFmpeg command to generate thumbnail (no Docker)
-    const ffmpegCommand = `ffmpeg -i ${tempVideoPath} -ss 00:00:01 -vframes 1 -s 1080x1920 ${tempThumbnailPath}`;
-
-    return new Promise((resolve, reject) => {
-        exec(ffmpegCommand, (err, stdout, stderr) => {
-            if (err) {
-                console.error('Error stderr:', stderr);
-                reject(`Error generating thumbnail: ${stderr}`);
-            } else {
-                console.log('FFmpeg stdout:', stdout);
-                const thumbnailBuffer = fs.readFileSync(tempThumbnailPath);
-
-                // Cleanup temporary files
-                fs.unlinkSync(tempVideoPath);
-                fs.unlinkSync(tempThumbnailPath);
-
-                resolve(thumbnailBuffer);
-            }
-        });
-    });
-}
-
+// for docker compose
 // export async function generateVideoThumbnail(buffer: Buffer): Promise<Buffer> {
-//     const tempVideoPath = path.join(__dirname, 'temp_video.mp4');
-//     const tempThumbnailPath = path.join(__dirname, 'temp_thumbnail.png');
+//     const videoDir = '/app/videos'; // Shared volume path inside backend container
+//     const tempVideoPath = path.join(videoDir, 'temp_video.mp4');
+//     const tempThumbnailPath = path.join(videoDir, 'temp_thumbnail.png');
 
 //     // Write the incoming video buffer to a temporary file
 //     fs.writeFileSync(tempVideoPath, buffer);
 
-//     // Absolute paths for Docker volumes
-//     // const inputDir = path.dirname(tempVideoPath);
-//     // const outputDir = path.dirname(tempThumbnailPath);
-//     // const inputFileName = path.basename(tempVideoPath);
-//     // const outputFileName = path.basename(tempThumbnailPath);
-
-//     // const dockerCommand = `docker run --rm -v "${inputDir}:/input" -v "${outputDir}:/output" jrottenberg/ffmpeg -i /input/${inputFileName} -ss 00:00:01 -vframes 1 -s 1080x1920 /output/${outputFileName}`;
+//     // FFmpeg command to generate thumbnail (no Docker)
+//     const ffmpegCommand = `ffmpeg -i ${tempVideoPath} -ss 00:00:01 -vframes 1 -s 1080x1920 ${tempThumbnailPath}`;
 
 //     return new Promise((resolve, reject) => {
-//         exec(dockerCommand, (err, stdout, stderr) => {
+//         exec(ffmpegCommand, (err, stdout, stderr) => {
 //             if (err) {
 //                 console.error('Error stderr:', stderr);
 //                 reject(`Error generating thumbnail: ${stderr}`);
@@ -106,6 +73,7 @@ export async function generateVideoThumbnail(buffer: Buffer): Promise<Buffer> {
 //                 console.log('FFmpeg stdout:', stdout);
 //                 const thumbnailBuffer = fs.readFileSync(tempThumbnailPath);
 
+//                 // Cleanup temporary files
 //                 fs.unlinkSync(tempVideoPath);
 //                 fs.unlinkSync(tempThumbnailPath);
 
@@ -114,3 +82,34 @@ export async function generateVideoThumbnail(buffer: Buffer): Promise<Buffer> {
 //         });
 //     });
 // }
+
+export async function generateVideoThumbnail(buffer: Buffer): Promise<Buffer> {
+    const tempVideoPath = path.join(__dirname, 'temp_video.mp4');
+    const tempThumbnailPath = path.join(__dirname, 'temp_thumbnail.png');
+
+    fs.writeFileSync(tempVideoPath, buffer);
+
+    const inputDir = path.dirname(tempVideoPath);
+    const outputDir = path.dirname(tempThumbnailPath);
+    const inputFileName = path.basename(tempVideoPath);
+    const outputFileName = path.basename(tempThumbnailPath);
+
+    const dockerCommand = `docker run --rm -v "${inputDir}:/input" -v "${outputDir}:/output" jrottenberg/ffmpeg -i /input/${inputFileName} -ss 00:00:01 -vframes 1 -s 1080x1920 /output/${outputFileName}`;
+
+    return new Promise((resolve, reject) => {
+        exec(dockerCommand, (err, stdout, stderr) => {
+            if (err) {
+                console.error('Error stderr:', stderr);
+                reject(`Error generating thumbnail: ${stderr}`);
+            } else {
+                console.log('FFmpeg stdout:', stdout);
+                const thumbnailBuffer = fs.readFileSync(tempThumbnailPath);
+
+                fs.unlinkSync(tempVideoPath);
+                fs.unlinkSync(tempThumbnailPath);
+
+                resolve(thumbnailBuffer);
+            }
+        });
+    });
+}

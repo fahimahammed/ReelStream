@@ -4,6 +4,7 @@ import { AuthServices } from './auth.service';
 import catchAsync from '../../utils/catchAsync';
 import env from '../../config/env';
 import { ILoginUserResponse, IRefreshTokenResponse } from './auth.interface';
+import { User } from '@prisma/client';
 
 const registerUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -53,8 +54,20 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const myProfile = catchAsync(async (req: Request, res: Response) => {
+    const result = await AuthServices.myProfile(req.user);
+
+    sendResponse<User>(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Access token generated!',
+        data: result,
+    });
+});
+
 export const AuthController = {
     registerUser,
     loginUser,
-    refreshToken
+    refreshToken,
+    myProfile
 };

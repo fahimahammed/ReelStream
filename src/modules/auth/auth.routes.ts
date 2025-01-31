@@ -2,8 +2,15 @@ import express from 'express';
 import { AuthController } from './auth.controller';
 import validateRequest from '../../middlewares/validateRequest';
 import { AuthValidation } from './auth.validation';
+import { auth } from '../../middlewares/auth';
 
 const router = express.Router();
+
+router.get(
+    "/me",
+    auth,
+    AuthController.myProfile
+)
 
 router.post(
     '/register',

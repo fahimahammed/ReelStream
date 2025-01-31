@@ -6,7 +6,7 @@ import { StatusCodes } from "http-status-codes";
 import { jwtHelpers } from "../../utils/jwtHelper";
 import { ILoginUser, ILoginUserResponse, IRefreshTokenResponse } from "./auth.interface";
 import env from "../../config/env";
-import { Secret } from "jsonwebtoken";
+import { JwtPayload, Secret } from "jsonwebtoken";
 
 const registerUser = async (payload: User): Promise<Partial<User>> => {
     const existingUser = await prisma.user.findUnique({
@@ -102,9 +102,25 @@ const refreshToken = async (token: string): Promise<IRefreshTokenResponse> => {
     };
 };
 
+const myProfile = async (authUser: JwtPayload): Promise<User> => {
+    const result = await prisma.user.findUnique({
+        where: {
+            id: authUser.id
+        },
+        include: {
+            videos: true,
+        }
+    });
+
+    if (!result) throw new ApiError(StatusCodes.NOT_FOUND, "Profile not found!")
+
+    return result;
+};
+
 
 export const AuthServices = {
     registerUser,
     loginUser,
-    refreshToken
+    refreshToken,
+    myProfile
 }
