@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import globalExceptionHandler from './middlewares/globalExceptionHandler';
 import { healthCheck, metricsMiddleware, metricsRoute } from './middlewares/metrics'
 import router from './routes';
+import { limiter } from './middlewares/rateLimiter';
 
 const app: Application = express();
 
@@ -15,7 +16,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(metricsMiddleware);
 
 
-app.use('/api/v1', router);
+app.use(
+    '/api/v1',
+    limiter,
+    router
+);
 app.get('/health', healthCheck);
 app.get('/metrics', metricsRoute);
 

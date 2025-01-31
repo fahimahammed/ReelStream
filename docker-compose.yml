@@ -12,6 +12,7 @@ services:
       - ffmpeg
     ports:
       - "3000:3000" # Changed port to 3000 on host machine
+      - "3002:3002"
     env_file:
       - .env
     volumes:
