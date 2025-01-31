@@ -15,36 +15,36 @@ if (!ffmpegPath) {
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 
-// export const generateVideoThumbnail = (videoBuffer: Buffer): Promise<Buffer> => {
-//     return new Promise((resolve, reject) => {
-//         const tempVideoPath = path.join(__dirname, 'temp_video.mp4');
-//         const tempThumbnailPath = path.join(__dirname, 'temp_thumbnail.png');
+export const generateVideoThumbnail = (videoBuffer: Buffer): Promise<Buffer> => {
+    return new Promise((resolve, reject) => {
+        const tempVideoPath = path.join(__dirname, 'temp_video.mp4');
+        const tempThumbnailPath = path.join(__dirname, 'temp_thumbnail.png');
 
-//         fs.writeFileSync(tempVideoPath, videoBuffer);
+        fs.writeFileSync(tempVideoPath, videoBuffer);
 
-//         // Generate the thumbnail using ffmpeg
-//         ffmpeg(tempVideoPath)
-//             .screenshots({
-//                 count: 1,
-//                 folder: __dirname,
-//                 filename: 'temp_thumbnail.png',
-//                 size: '1080x1920',
-//             })
-//             .on('end', () => {
-//                 const thumbnailBuffer = fs.readFileSync(tempThumbnailPath);
+        // Generate the thumbnail using ffmpeg
+        ffmpeg(tempVideoPath)
+            .screenshots({
+                count: 1,
+                folder: __dirname,
+                filename: 'temp_thumbnail.png',
+                size: '1080x1920',
+            })
+            .on('end', () => {
+                const thumbnailBuffer = fs.readFileSync(tempThumbnailPath);
 
-//                 // Clean up temporary files
-//                 fs.unlinkSync(tempVideoPath);
-//                 fs.unlinkSync(tempThumbnailPath);
+                // Clean up temporary files
+                fs.unlinkSync(tempVideoPath);
+                fs.unlinkSync(tempThumbnailPath);
 
-//                 resolve(thumbnailBuffer);
-//             })
-//             .on('error', (err) => {
-//                 fs.unlinkSync(tempVideoPath);
-//                 reject(new Error('Error generating thumbnail: ' + err.message));
-//             });
-//     });
-// };
+                resolve(thumbnailBuffer);
+            })
+            .on('error', (err) => {
+                fs.unlinkSync(tempVideoPath);
+                reject(new Error('Error generating thumbnail: ' + err.message));
+            });
+    });
+};
 
 export const compressVideo = async (
     videoBuffer: Buffer,
@@ -67,7 +67,6 @@ export const compressVideo = async (
                 ])
                 .output(tempOutputPath)
                 .on('progress', (progress) => {
-                    console.log("progress: ", progress.targetSize);
                     progressUpdate(progress.targetSize)
                 })
                 .on('end', () => resolve())
