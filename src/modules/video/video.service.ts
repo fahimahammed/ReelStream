@@ -31,7 +31,7 @@ const uploadVideo = async (
     const progressUpdate = (chunkSize: number) => {
         uploadedSize += chunkSize;
         const progress = (uploadedSize / totalSize) * 100 * 100 * 100;
-        io.emit('uploadProgress', { progress: Math.min(progress, 100) });
+        io.emit(`uploadProgress-${authUser.id}`, { progress: Math.min(progress, 100) });
     };
 
     try {
