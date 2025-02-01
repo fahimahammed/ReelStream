@@ -48,7 +48,7 @@ const loginUser = async (payload: ILoginUser): Promise<ILoginUserResponse> => {
     if (!isPasswordValid) throw new ApiError(StatusCodes.BAD_REQUEST, "Wrong Password!");
 
     const accessToken = jwtHelpers.createToken(
-        { id: user.id, email: user.email },
+        { id: user.id, email: user.email, name: user.name, username: user.username },
         env.jwt.secret as Secret,
         env.jwt.expires_in as string
     )
@@ -85,7 +85,9 @@ const refreshToken = async (token: string): Promise<IRefreshTokenResponse> => {
         },
         select: {
             id: true,
-            email: true
+            email: true,
+            name: true,
+            username: true
         }
     });
     if (!isUserExist) {
@@ -93,7 +95,7 @@ const refreshToken = async (token: string): Promise<IRefreshTokenResponse> => {
     }
 
     const newAccessToken = jwtHelpers.createToken(
-        { id: isUserExist.id, email: isUserExist.email },
+        { id: isUserExist.id, email: isUserExist.email, name: isUserExist.name, username: isUserExist.username },
         env.jwt.secret as Secret,
         env.jwt.expires_in as string
     );
