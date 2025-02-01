@@ -6,6 +6,8 @@ import { promisify } from 'util';
 import { tmpdir } from 'os';
 import { exec } from 'child_process';
 import { Buffer } from 'node:buffer';
+import ApiError from '../../errors/ApiError';
+import { StatusCodes } from 'http-status-codes';
 
 const unlinkAsync = promisify(fs.unlink);
 const readFileAsync = promisify(fs.readFile);
@@ -21,6 +23,11 @@ export const compressVideo = async (
 
     try {
         await writeFileAsync(tempInputPath, videoBuffer);
+
+        const { duration } = await getVideoDuration(tempInputPath);
+        if (duration >= 60) {
+            throw new ApiError(StatusCodes.BAD_REQUEST, 'Video duration must be less than 60 seconds.');
+        }
 
         await new Promise<void>((resolve, reject) => {
             ffmpeg(tempInputPath)
@@ -82,6 +89,28 @@ export async function generateVideoThumbnail(buffer: Buffer): Promise<Buffer> {
         });
     });
 }
+
+export const getVideoDuration = (
+    videoPath: string
+): Promise<{ duration: number; metadata: ffmpeg.FfprobeData }> => {
+    return new Promise((resolve, reject) => {
+        ffmpeg(videoPath).ffprobe((err, metadata) => {
+            if (err) {
+                reject(
+                    new Error('Failed to extract video duration: ' + err.message)
+                );
+            } else {
+                const duration = metadata.format.duration; // Duration in seconds
+                console.log({ metadata });
+                if (duration === undefined) {
+                    reject(new Error('Could not determine video duration.'));
+                } else {
+                    resolve({ duration, metadata });
+                }
+            }
+        });
+    });
+};
 
 // for local
 // export async function generateVideoThumbnail(buffer: Buffer): Promise<Buffer> {

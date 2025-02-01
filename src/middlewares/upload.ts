@@ -2,7 +2,7 @@ import multer, { FileFilterCallback } from 'multer';
 import { Request } from 'express';
 import path from 'path';
 
-const maxSize = 50 * 1024 * 1024; // 50MB
+const maxSize = 50 * 1024 * 1024;
 
 const storage = multer.memoryStorage();
 
