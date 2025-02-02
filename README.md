@@ -214,6 +214,8 @@ api_response_duration_seconds_sum 8.209678709999995
 api_response_duration_seconds_count 62
 ```
 
+- [API Documentation - POSTMAN](https://documenter.getpostman.com/view/41621562/2sAYQiCU7b) 
+
 #### How to Use:
 
 1. **Query Metrics**: 
@@ -237,33 +239,8 @@ This setup allows you to track API performance and request metrics in real-time 
 
 ## Architecture Diagram
 
-```plaintext
-                            +------------+
-                            |  Frontend  |
-                            +------+-----+
-                                   |
-                     +-------------+--------------+
-                     |                            |
-             +-------v-------+              +-----v------+
-             |    Backend    |              |   Minio    |
-             | (Node.js API) |              | (Object    |
-             +-------+-------+              | Storage)   |
-                     |                      +------------+
-             +-------v-------+                  
-             |    PostgreSQL |
-             |  (Database)   |
-             +-------+-------+
-                     |
-             +-------v-------+
-             |    Redis      |
-             | (Cache)       |
-             +---------------+
-                     |
-             +-------v-------+
-             |    FFmpeg     |
-             |               |
-             +---------------+
-```
+![Architecture](./assets/arch.jpg)
+
 
 ### Components:
 - **Frontend**: Communicates with the backend.
