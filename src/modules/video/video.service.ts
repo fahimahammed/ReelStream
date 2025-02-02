@@ -108,7 +108,7 @@ const getAllVideos = async (query: Record<string, unknown>) => {
 };
 
 
-const getVideoById = async (id: string, userIp: string): Promise<Video> => {
+const getVideoById = async (id: string, userIp: string, authUser?: JwtPayload): Promise<Video> => {
     const cacheKey = `video:${id}`;
     const viewKey = `video_view:${id}:${userIp}`;
 
@@ -158,11 +158,18 @@ const getVideoById = async (id: string, userIp: string): Promise<Video> => {
             }
         });
 
-        result = {
-            prev: prevVideoId,
-            next: nextVideoId,
-            video
+        let isLiked = false;
+        if (authUser) {
+            const likedEngagement = await prisma.engagement.findFirst({
+                where: {
+                    videoId: id,
+                    userId: authUser.id
+                }
+            });
+            isLiked = !!likedEngagement;
         }
+
+        result = { prev: prevVideoId, next: nextVideoId, video, isLiked };
     }
 
     if (!result) {
@@ -179,7 +186,7 @@ const getVideoById = async (id: string, userIp: string): Promise<Video> => {
     }
 
     if (!cachedVideo) {
-        await redis.setex(cacheKey, 180, JSON.stringify(result));
+        await redis.setex(cacheKey, 60, JSON.stringify(result));
     }
 
     return result;
@@ -209,7 +216,7 @@ const likeVideo = async (videoId: string, authUser: JwtPayload) => {
             }
         });
         if (!video) throw new ApiError(StatusCodes.NOT_FOUND, "Video not found!");
-        await redis.setex(cacheKey, 180, JSON.stringify(video));
+        await redis.setex(cacheKey, 10, JSON.stringify(video));
     }
 
     const hasLiked =
@@ -236,9 +243,9 @@ const likeVideo = async (videoId: string, authUser: JwtPayload) => {
             });
 
             await redis.del(likeKey);
-            await redis.setex(cacheKey, 60, JSON.stringify({ ...video, likeCount: updatedVideo.likeCount }));
+            await redis.setex(cacheKey, 10, JSON.stringify({ ...video, likeCount: updatedVideo.likeCount, likeStatus: false }));
 
-            return { message: "Video unliked successfully", videoId, likeCount: updatedVideo.likeCount };
+            return { message: "Video unliked successfully", videoId, likeCount: updatedVideo.likeCount, likeStatus: false };
         } else {
             await tx.engagement.create({
                 data: { videoId, userId: authUser.id },
@@ -250,10 +257,10 @@ const likeVideo = async (videoId: string, authUser: JwtPayload) => {
                 select: { likeCount: true },
             });
 
-            await redis.setex(likeKey, 60, "1");
-            await redis.setex(cacheKey, 60, JSON.stringify({ ...video, likeCount: updatedVideo.likeCount }));
+            await redis.setex(likeKey, 10, "1");
+            await redis.setex(cacheKey, 10, JSON.stringify({ ...video, likeCount: updatedVideo.likeCount, likeStatus: true }));
 
-            return { message: "Video liked successfully", videoId, likeCount: updatedVideo.likeCount };
+            return { message: "Video liked successfully", videoId, likeCount: updatedVideo.likeCount, likeStatus: true };
         }
     });
 };
