@@ -38,7 +38,7 @@ const getVideoById = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
     const ip = req.ip;
 
-    const result = await VideoService.getVideoById(id, ip as string);
+    const result = await VideoService.getVideoById(id, ip as string, req.user);
     sendResponse(res, {
         statusCode: 200,
         success: true,

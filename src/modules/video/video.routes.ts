@@ -3,12 +3,14 @@ import { VideoController } from './video.controller';
 import upload from '../../middlewares/upload';
 import { parseBody } from '../../middlewares/parseBody';
 import { auth } from '../../middlewares/auth';
+import { authOptional } from '../../middlewares/authOptional';
 
 const router = express.Router();
 
 router.get("/", VideoController.getAllVideos);
 router.get(
     "/:id",
+    authOptional,
     VideoController.getVideoById
 );
 
